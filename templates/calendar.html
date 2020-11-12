@@ -1,54 +1,149 @@
 <!DOCTYPE html>
 <head>
-    <title>Apollo Calendar</title>
-    <!-- Compiled and minified CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <title>Apollo Settings</title>
 
-    <!-- MathJAX library -->
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-	<script type="text/javascript" id="MathJax-script" async
-	  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
-	</script>
+  <!-- MathJAX library -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script type="text/javascript" id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+  </script>
+
+  <!-- Compiled and minified JavaScript -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script>
+    $(document).ready(function(){
+      $('select').formSelect();
+    });
+
+    $(document).ready(function(){
+      $('.timepicker').timepicker();
+    });
+  </script>
+  
+  <!-- Compiled and minified CSS -->
+  <meta name = "viewport" content = "width = device-width, initial-scale = 1">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <link rel = "stylesheet"
+       href = "https://fonts.googleapis.com/icon?family=Material+Icons">
 </head>
 <body>
-    <nav class="blue accent-3">
-        <div class="nav-wrapper">
-            <div><a href="{{ url_for('index') }}" class="brand-logo center">Apollo<i class="right large material-icons">note_add</i></a></div>
-            <ul id="nav-mobile" class="right hide-on-med-and-down">
-            	<!-- use url_for here -->
-                <li><a href="{{ url_for('index') }}">Home</a></li>
-                <li><a href="{{ url_for('notes') }}">Notes</a></li>                
-                <li><a href="{{ url_for('assignments') }}">Assignments</a></li>
-                <li><a href="{{ url_for('calendar') }}">Calendar</a></li>
-                <li><a href="{{ url_for('settings') }}"><i class="right small material-icons">settings</i></a></li>
-            </ul>
+  <nav class="blue accent-3">
+    <div class="nav-wrapper">
+      <div style="padding-left:1rem;">
+        <a href="{{ url_for('settings') }}" class="breadcrumb left">
+          {{ str(active_semester.get_season()) + " " + str(active_semester.get_year() )}}
+        </a>
+      </div>
+      <div><a href="{{ url_for('index') }}" class="brand-logo center">Apollo<i class="right large material-icons">note_add</i></a></div>
+      <ul id="nav-mobile" class="right hide-on-med-and-down">
+        <!-- use url_for here -->
+        <li><a href="{{ url_for('index') }}">Home</a></li>
+        <li><a href="{{ url_for('notes') }}">Notes</a></li>                
+        <li><a href="{{ url_for('assignments') }}">Assignments</a></li>
+        <li><a href="{{ url_for('calendar') }}">Calendar</a></li>
+        <li><a href="{{ url_for('settings') }}"><i class="right small material-icons">settings</i></a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <br>
+
+  <div class="container">
+    <h5 class="blue-text darken-4">Weekly Schedule</h5>
+    <div class="row">
+      <canvas id="weeklySchedule"></canvas>
+    </div>
+  </div>
+
+  <br>
+
+  <div class="container">
+    <ul class="collection with-header">
+      <li class="collection-header"><h5 class="blue-text darken-4">Enrolled Classes</h5></li>
+        {% if active_semester.get_num_classes() == 0 %}
+          <li class="collection-item">No classes enrolled this semester.</li>
+        {% else %}
+          {% for c in classes %}
+            {% if int(c.get_semester_id()) == int(active_semester.get_uuid()) %}
+              <li class="collection-item">
+                <div class="row">
+                  <span class="col s12 m4 l4 valign">{{ str(c.get_prefix()) + " " + str(c.get_course_number()) + " "}}<span class="grey-text darken-2">{{ str(c.get_uuid()) }}</span></span>
+                  <span class="col s12 m4 l4 valign">{{ str(c.get_meet_days()) + " " + str(c.get_start_time()) + " - " + str(c.get_end_time()) }}</span>
+                  <!-- <span class="right grey-text darken-2">{{  str(c.get_uuid()) }}</span> -->
+                  <span class="col s12 m4 l4 valign">{{ str(c.get_instructor() )}}</span>
+                </div>
+              </li>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+    </ul>
+  </div>
+
+  <br>
+
+  <div class="container">
+    <h5 class="blue-text darken-4">Add a new class</h5>
+    <form method="POST">
+      <div class="row">
+        <div class="input-field col s12 m6 l4">
+          <input id="prefix" type="text" class="validate" name="prefix">
+          <label for="prefix">Course Prefix</label>
         </div>
-    </nav>
+        <div class="input-field col s12 m6 l4">
+          <input id="course_number" type="text" class="validate" name="course_number">
+          <label for="course_number">Course Number</label>
+        </div>
+        <div class="input-field col s12 m12 l4">
+          <input id="instructor" type="text" class="validate" name="instructor">
+          <label for="instructor">Instructor</label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="input-field col s12 m6 l6">
+          <input id="meet_days" type="text" class="validate" name="meet_days">
+          <label for="meet_days">Meet Days</label>
+        </div>
+        <div class="input-field col s12 m6 l6">
+          <input disabled value="{{ active_semester.get_uuid() }}" id="disabled" type="text" class="validate">
+          <label for="disabled">Semester ID</label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="input-field col s12 m6 l6">
+          <input type="text" class="timepicker" name="start_time">
+          <label for="start_time">Enter Start Time</label>
+        </div>
+        <div class="input-field col s12 m6 l6">
+          <input type="text" class="timepicker" name="end_time">
+          <label for="end_time">Enter End Time</label>
+        </div>
+      </div>
+      
+      <button class="btn waves-effect waves-light right" type="submit" name="btn" value="Add">Add
+      </button>
+    </form>
+  </div>
 
+  <br>
 
+  <style type="text/css">
+    .badge {
+      font-size: 14px !important;
+    }
 
-    <style type="text/css">
-        .badge {
-            font-size: 14px !important;
-        }
+    .collection-item {
+      font-size: 14px !important;
+    }
 
-        .collection-item {
-            font-size: 14px !important;
-        }
+    .material-icons {
+      padding-bottom: 3px !important;
+    }
+  </style>
 
-        .material-icons {
-        	padding-bottom: 3px !important;
-        }
-    </style>
-
-    <!-- Compiled and minified JavaScript -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
-    
-    <script type="text/javascript" src="{{ url_for('static', filename='js/index.js')}}"></script>
-    <script type="text/javascript">
-		chart();
-	</script>
-
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+  <script type="text/javascript" src="{{ url_for('static', filename='js/calendar.js') }}"></script>
+  <script type="text/javascript">
+    chart();
+  </script>
 </body>

@@ -1,52 +1,79 @@
 <!DOCTYPE html>
 <head>
-    <title>Apollo Notes</title>
-    <!-- Compiled and minified CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <title>Apollo Settings</title>
 
-    <!-- MathJAX library -->
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-	<script type="text/javascript" id="MathJax-script" async
-	  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
-	</script>
+  <!-- MathJAX library -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script type="text/javascript" id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+  </script>
+
+  <!-- Compiled and minified JavaScript -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script>
+    $(document).ready(function(){
+      $('select').formSelect();
+    });
+  </script>
+  <!-- Compiled and minified CSS -->
+  <meta name = "viewport" content = "width = device-width, initial-scale = 1">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <link rel = "stylesheet"
+       href = "https://fonts.googleapis.com/icon?family=Material+Icons">
 </head>
 <body>
-    <nav class="blue accent-3">
-        <div class="nav-wrapper">
-            <div><a href="{{ url_for('index') }}" class="brand-logo center">Apollo<i class="right large material-icons">note_add</i></a></div>
-            <ul id="nav-mobile" class="right hide-on-med-and-down">
-            	<!-- use url_for here -->
-                <li><a href="{{ url_for('index') }}">Home</a></li>
-                <li><a href="{{ url_for('notes') }}">Notes</a></li>                
-                <li><a href="{{ url_for('assignments') }}">Assignments</a></li>
-                <li><a href="{{ url_for('calendar') }}">Calendar</a></li>
-                <li><a href="{{ url_for('settings') }}"><i class="right small material-icons">settings</i></a></li>
-            </ul>
+  <nav class="blue accent-3">
+    <div class="nav-wrapper">
+      <div style="padding-left:1rem;">
+        <a href="{{ url_for('settings') }}" class="breadcrumb left">
+          {{ str(active_semester.get_season()) + " " + str(active_semester.get_year() )}}
+        </a>
+      </div>
+      <div><a href="{{ url_for('index') }}" class="brand-logo center">Apollo<i class="right large material-icons">note_add</i></a></div>
+      <ul id="nav-mobile" class="right hide-on-med-and-down">
+        <!-- use url_for here -->
+        <li><a href="{{ url_for('index') }}">Home</a></li>
+        <li><a href="{{ url_for('notes') }}">Notes</a></li>                
+        <li><a href="{{ url_for('assignments') }}">Assignments</a></li>
+        <li><a href="{{ url_for('calendar') }}">Calendar</a></li>
+        <li><a href="{{ url_for('settings') }}"><i class="right small material-icons">settings</i></a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <br>
+
+  <div class="container">
+    <form>
+      <div class="row">
+        <div class="input-field col s12">
+          <div class="select-wrapper">
+            <svg class="caret" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"></path><path d="M0 0h24v24H0z" fill="none"></path></svg>
+            <select tabindex="-1">
+              <option value="" disabled="" selected="">Choose your class</option>
+            </select>
+          </div>
+          <label>Select a class</label>
         </div>
-    </nav>
+        <button class="btn waves-effect waves-light right" type="submit" name="action">Select
+        </button>
+      </div>
+    </form>
+  </div>
 
-    <style type="text/css">
-        .badge {
-            font-size: 14px !important;
-        }
+  <style type="text/css">
+    .badge {
+      font-size: 14px !important;
+    }
 
-        .collection-item {
-            font-size: 14px !important;
-        }
+    .collection-item {
+      font-size: 14px !important;
+    }
 
-        .material-icons {
-        	padding-bottom: 3px !important;
-        }
-    </style>
-
-    <!-- Compiled and minified JavaScript -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
-    
-    <script type="text/javascript" src="{{ url_for('static', filename='js/index.js')}}"></script>
-    <script type="text/javascript">
-		chart();
-	</script>
+    .material-icons {
+      padding-bottom: 3px !important;
+    }
+  </style>
 
 </body>
