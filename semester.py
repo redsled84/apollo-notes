@@ -32,6 +32,9 @@ class Semester:
 	def get_num_classes(self):
 		return self.num_classes
 
+	def get_title(self):
+		return str(self.get_season()) + " " + str(self.get_year())
+
 	# setters
 	def set_uuid(self, uid):
 		self.uid          = int(uid)

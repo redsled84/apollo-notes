@@ -87,6 +87,8 @@ class DatabaseWrapper:
                                 )
                         )
 
+        self.save_changes()
+
     # fetch semesters
     def select_semesters(self):
         self.c.execute('SELECT * FROM SEMESTER')
@@ -98,12 +100,14 @@ class DatabaseWrapper:
             if s.get_uuid() == int(semester_id):
                 s.set_active(True)
                 self.c.execute('UPDATE SEMESTER SET SEMESTER_ACTIVE=1 WHERE SEMESTER_ID=(?)',
-                                    (semester_id,))
+                    (semester_id,)
+                )
                 self.active_semester = s
             else:
                 s.set_active(False)
                 self.c.execute('UPDATE SEMESTER SET SEMESTER_ACTIVE=0 WHERE SEMESTER_ID<>(?)',
-                                    (semester_id,))
+                    (semester_id,)
+                )
 
         self.save_changes()
 
@@ -136,7 +140,8 @@ class DatabaseWrapper:
         return self.c.fetchall()
 
     def insert_class(self, prefix, course_number, instructor, meet_days, start_time, end_time, semester_id):
-        if prefix == "" or course_number == "" or instructor == "" or meet_days == "" or start_time == "" or end_time == "" or semester_id == "":
+        if prefix == "" or course_number == "" or instructor == "" or meet_days == "" or \
+        start_time == "" or end_time == "" or semester_id == "":
             print('Attempted to insert an invalid class object.')
             return
 
@@ -174,6 +179,7 @@ class DatabaseWrapper:
                                     temp.get_semester_id() 
                         ))
 
+        # update the active semester object (increment the num classes)
         temp_semester = None
         for s in self.semesters:
             if s.uid == semester_id:
@@ -182,15 +188,69 @@ class DatabaseWrapper:
                 break
 
         if temp_semester:
-            self.c.execute('UPDATE SEMESTER SET SEMESTER_NUM_CLASSES=? WHERE SEMESTER_ID=?', (temp_semester.get_num_classes(), temp.get_semester_id(),))
+            self.c.execute('UPDATE SEMESTER SET SEMESTER_NUM_CLASSES=? WHERE SEMESTER_ID=?',
+                (temp_semester.get_num_classes(), temp.get_semester_id(),)
+            )
             self.save_changes()
 
 
-    def delete_class(self):
-        return
+    def delete_class(self, class_id):
+        self.c.execute('SELECT * FROM CLASS WHERE CLASS_ID=?',
+            (int(class_id),)
+        )
+        class_ = self.c.fetchone()
+        semester_id = class_[7]
 
-    def update_class(self):
-        return
+        self.c.execute('DELETE FROM CLASS WHERE CLASS_ID=?',
+            (int(class_id),)
+        )
+        self.save_changes()
+
+        self.classes = []
+        self.load_classes()
+
+        # update the active semester object (decrement the num classes)
+        temp_semester = None
+        for s in self.semesters:
+            if s.uid == semester_id:
+                s.set_num_classes(s.get_num_classes() - 1)
+                temp_semester = s
+                break
+
+        if temp_semester:
+            self.c.execute('UPDATE SEMESTER SET SEMESTER_NUM_CLASSES=? WHERE SEMESTER_ID=?',
+                (temp_semester.get_num_classes(), int(class_[7]))
+            )
+            self.save_changes()
+
+    def update_class(self, class_id, prefix, course_number, instructor, meet_days, start_time, end_time):
+        self.c.execute('SELECT * FROM CLASS WHERE CLASS_ID=?',
+            (int(class_id),)
+        )
+        class_ = self.c.fetchone()
+        self.save_changes()
+
+        self.c.execute("""UPDATE CLASS SET
+            CLASS_PREFIX=?,
+            CLASS_COURSE_NUMBER=?,
+            CLASS_INSTRUCTOR=?,
+            CLASS_MEET_DAYS=?,
+            CLASS_START_TIME=?,
+            CLASS_END_TIME=? WHERE CLASS_ID=?""",
+            (
+                str(prefix),
+                int(course_number),
+                str(instructor),
+                str(meet_days),
+                start_time,
+                end_time,
+                int(class_id)
+            )
+        )
+        self.save_changes()
+
+        self.classes = []
+        self.load_classes()
 
     def get_n_classes_today(self, semester_id):
         return

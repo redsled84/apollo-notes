@@ -2,14 +2,19 @@
 <head>
   <title>Apollo Home</title>
   <!-- Compiled and minified CSS -->
-  <link rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-  <link rel="stylesheet"
-      href="https://fonts.googleapis.com/icon?family=Material+Icons" >
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/icon?family=Material+Icons" >
 
   <!-- MathJAX library -->
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script type="text/javascript" id="MathJax-script" async
+  <script
+    type="text/javascript"
+    id="MathJax-script"
+    async
     src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
   </script>
 </head>
@@ -19,17 +24,33 @@
     <div class="nav-wrapper">
       <div style="padding-left:1rem;">
         <a href="{{ url_for('settings') }}" class="breadcrumb left">
-          {{ str(active_semester.get_season()) + " " + str(active_semester.get_year() )}}
+          {{ active_semester.get_title() }}
         </a>
       </div>
-      <div><a href="{{ url_for('index') }}" class="brand-logo center">Apollo<i class="right large material-icons">note_add</i></a></div>
+      <div>
+        <a href="{{ url_for('index') }}" class="brand-logo center">Apollo
+          <i class="right large material-icons">note_add</i>
+        </a>
+      </div>
       <ul id="nav-mobile" class="right hide-on-med-and-down">
         <!-- Navbar links -->
-        <li><a href="{{ url_for('index') }}">Home</a></li>
-        <li><a href="{{ url_for('notes') }}">Notes</a></li>                
-        <li><a href="{{ url_for('assignments') }}">Assignments</a></li>
-        <li><a href="{{ url_for('calendar') }}">Calendar</a></li>
-        <li><a href="{{ url_for('settings') }}"><i class="right small material-icons">settings</i></a></li>
+        <li>
+          <a href="{{ url_for('index') }}">Home</a>
+        </li>
+        <li>
+          <a href="{{ url_for('notes') }}">Notes</a>
+        </li>
+        <li>
+          <a href="{{ url_for('assignments') }}">Assignments</a>
+        </li>
+        <li>
+          <a href="{{ url_for('calendar') }}">Calendar</a>
+        </li>
+        <li>
+          <a href="{{ url_for('settings') }}">
+            <i class="right small material-icons">settings</i>
+          </a>
+        </li>
         <!-- TODO: add mobile nav sidebar -->
       </ul>
     </div>
@@ -38,9 +59,20 @@
   <!-- Basic metrics (read-only) -->
   <div class="container">
     <h2>Hi, <span class="blue-text accent-3">{{ user.first }}</span> :)</h2>
-    <h5><span class="red-text accent-3 right">0<span class="black-text">/10</span></span> Assignments completed</h5>
-    <h5><span class="red-text accent-3 right">1<span class="black-text">/2</span></span> Classes scheduled today</h5>
-    <h5><span class="blue-text accent-3 right">1</span> Notes taken</h5>
+    <h5>
+      <span class="red-text accent-3 right">0
+        <span class="black-text">/10</span>
+      </span> Assignments completed
+    </h5>
+    <h5>
+      <span class="red-text accent-3 right">1
+        <span class="black-text">/2</span>
+      </span> Classes scheduled today
+    </h5>
+    <h5>
+      <span class="blue-text accent-3 right">1
+      </span> Notes taken
+    </h5>
   </div>
 
   <br>
@@ -52,8 +84,14 @@
       <div class="col s12 m12 l12">
         <div class="card white darken-1 z-depth-2">
           <div class="card-content">
-            <span class="card-title teal-text darken-4">Ch 26<span class="right black-text">11.2.2020</span></span>
-            <p class="grey-text darken-2">Now suppose we disconnect the battery from the plates. The plates are not connected with a wire to anything now, so the plates remain charged. The capacitor has ...</p>
+            <span class="card-title teal-text darken-4">Ch 26
+              <span class="right black-text">11.2.2020</span>
+            </span>
+            <p class="grey-text darken-2">
+             Now suppose we disconnect the battery from the plates.
+             The plates are not connected with a wire to anything now,
+             so the plates remain charged. The capacitor has ...
+           </p>
           </div>
           <div class="card-action">
             <span class="flair orange-text darken-3">PHYS 181</span>
@@ -71,12 +109,16 @@
     <div class="row">
       <div class="col s12 m12 l12">
         <ul class="collection with-header z-depth-2">
-          <li class="collection-header orange-text darken-3"><h6>CS 202</h6></li>
+          <li class="collection-header orange-text darken-3">
+            <h6>CS 202</h6>
+          </li>
           <li class="collection-item">
             <span class="title teal-text darken-4">Project Assignment 9</span>
             <p>
               <span class="left">11.16.2020</span>
-              <span class="right"><i class="small right material-icons red-text">warning</i>INCOMPLETE</span>
+              <span class="right">
+                <i class="small right material-icons red-text">warning</i>INCOMPLETE
+              </span>
               <br>
               <a href="#">GitHub</a>
             </p>
@@ -85,7 +127,9 @@
             <span class="title teal-text darken-4">Project Assignment 10</span>
             <p>
               <span class="left">11.27.2020</span>
-              <span class="right"><i class="small right material-icons red-text">warning</i>INCOMPLETE</span>
+              <span class="right">
+                <i class="small right material-icons red-text">warning</i>INCOMPLETE
+              </span>
               <br>
               <a href="#">GitHub</a>
             </p>
@@ -101,7 +145,9 @@
             <span class="title teal-text darken-4">Week 12: Chapter 27</span>
             <p>
               <span class="left">11.13.2020</span>
-              <span class="right"><i class="small right material-icons red-text">warning</i>INCOMPLETE</span>
+              <span class="right">
+                <i class="small right material-icons red-text">warning</i>INCOMPLETE
+              </span>
               <br>
               <a href="#">WebAssign</a>
             </p>
@@ -110,7 +156,9 @@
             <span class="title teal-text darken-4">27.1 Q1, Q2, Q3</span>
             <p>
               <span class="left">11.16.2020</span>
-              <span class="right"><i class="small right material-icons red-text">warning</i>INCOMPLETE</span>
+              <span class="right">
+                <i class="small right material-icons red-text">warning</i>INCOMPLETE
+              </span>
               <br>
               <a href="#">WebCampus</a>
             </p>
