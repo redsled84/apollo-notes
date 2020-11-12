@@ -23,6 +23,10 @@
     $(document).ready(function(){
       $('.modal').modal();
     });
+
+    $(document).ready(function(){
+      var instance = M.Tabs.init($('.tabs').tabs(), {swipeable: true});
+    });
   </script>
   
   <!-- Compiled and minified CSS -->
@@ -98,21 +102,42 @@
 
   <br>
 
-  <!-- show the weekly schedule considering all the enrolled class times -->
   <div class="container">
-    <h5 class="blue-text darken-4">Time Requirements</h5>
-    <div class="row">
-      <canvas id="timeRequirements"></canvas>
+    <ul id="tabs-swipe" class="tabs">
+      <li class="tab col s3"><a class="active blue-text" href="#swipe-view">Weekly Schedule</a></li>
+      <li class="tab col s3"><a class="blue-text" href="#swipe-edit">Time Requirements</a></li>
+    </ul>
+  </div>
+
+  <br>
+
+  <div id="swipe-view">
+    <div class="container">
+      <h5 class="blue-text">Weekly Schedule</h5>
+      <div class="row">
+        <canvas id="weeklySchedule"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div id="swipe-edit">
+    <!-- show the weekly schedule considering all the enrolled class times -->
+    <div class="container">
+      <h5 class="blue-text">Weekly Time Requirements</h5>
+      <div class="row">
+        <canvas id="timeRequirements"></canvas>
+      </div>
     </div>
   </div>
 
   <br>
 
+
   <!-- table of all the database classes related to the active semester -->
   <div class="container">
     <ul class="collection with-header">
       <li class="collection-header">
-        <h5 class="blue-text darken-4 col s12">Enrolled Classes</h5>
+        <h5 class="blue-text col s12">Enrolled Classes</h5>
       </li>
       <!-- if the currently active semester has no enrolled classes then list a default message -->
       {% if active_semester.get_num_classes() == 0 %}
@@ -170,7 +195,7 @@
                   </button>
 
                   <!-- modal trigger -->
-                  <a class="waves-effect waves-light btn modal-trigger red" href="#modal{{ c.get_uuid() }}">DELETE</a>
+                  <a class="waves-effect waves-light btn modal-trigger red accent-2" href="#modal{{ c.get_uuid() }}">DELETE</a>
 
                   <!-- modal structure -->
                   <div id="modal{{ c.get_uuid() }}" class="modal">
@@ -190,7 +215,7 @@
                       </a>
                       <!-- delete action -->
                       <button
-                        class="btn small waves-effect waves-light red darken-4"
+                        class="btn small waves-effect waves-light red accent-2"
                         type="submit"
                         name="delete"
                         value="delete">
@@ -215,7 +240,7 @@
 
   <!-- new class form -->
   <div class="container new-class">
-    <h5 class="blue-text darken-4">Add a new class</h5>
+    <h5 class="blue-text">Add a new class</h5>
     <form method="POST">
       <div class="row">
         <div class="input-field col s12 m6 l4">
@@ -295,6 +320,9 @@
         <button
           class="btn waves-effect waves-light right col s12 m2 l2"
           type="submit"
+          onclick="M.toast({html: document.getElementById('prefix').value==='' ?
+            'Please fill out the rest of the form' :
+            'Added the class`' + document.getElementById('prefix').value + ' ' + document.getElementById('course_number').value + '`'})"
           name="btn"
           value="Add"
           style="margin-bottom: 2rem !important;">
@@ -310,6 +338,7 @@
   <script type="text/javascript" src="{{ url_for('static', filename='js/calendar.js') }}"></script>
 
   <script type="text/javascript">
-    chart([ {%for c in classes %}{{ c.to_json()|tojson }},{% endfor %} ]);
+    timeReq([ {%for c in classes %}{{ c.to_json()|tojson }},{% endfor %} ]);
+    weeklySchedule([ {%for c in classes %}{{ c.to_json()|tojson }},{% endfor %} ]);
   </script>
 </body>
