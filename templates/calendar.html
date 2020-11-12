@@ -44,6 +44,21 @@
     .material-icons {
       padding-bottom: 3px !important;
     }
+
+    .collection-item {
+      line-height: 1.5em !important;
+      vertical-align: middle !important;
+    }
+
+    .collection-text {
+      margin-top: 1.5rem !important;
+      font-size: 16px;
+    }
+
+    .btn {
+      margin-top: 1rem !important;
+    }
+
   </style>
 </head>
 <body>
@@ -96,93 +111,102 @@
   <!-- table of all the database classes related to the active semester -->
   <div class="container">
     <ul class="collection with-header">
-      <li class="collection-header"><h5 class="blue-text darken-4">Enrolled Classes</h5></li>
+      <li class="collection-header">
+        <h5 class="blue-text darken-4 col s12">Enrolled Classes</h5>
+      </li>
+      <!-- if the currently active semester has no enrolled classes then list a default message -->
+      {% if active_semester.get_num_classes() == 0 %}
 
-        <!-- if the currently active semester has no enrolled classes then list a default message -->
-        {% if active_semester.get_num_classes() == 0 %}
+        <li class="collection-item">No classes enrolled this semester.</li>
 
-          <li class="collection-item">No classes enrolled this semester.</li>
+      {% else %}
+        <li class="collection-item" style="padding-bottom:0rem !important;">
+          <div class="row">
+            <span class="col s3 grey-text darken-3" style="font-size: 12px;">Title</span>
+            <span class="col s3 grey-text darken-3" style="font-size: 12px;">Meeting Time</span>
+            <span class="col s3 grey-text darken-3" style="font-size: 12px;">Instructor</span>
+          </div>
+        </li>
+        <!-- loop through every class -->
+        {% for c in classes %}
+          <!-- if a class has the same semester_id -->
+          {% if int(c.get_semester_id()) == int(active_semester.get_uuid()) %}
+            <!-- materializecss collection item -->
+            
+            <li class="collection-item">
+              <div class="row">
+                <!-- display the class prefix, number, and database id -->
+                <span class="collection-text col s12 m2 l3">
+                  {{ c.get_title() + " "}}<span class="grey-text darken-2">{{ str(c.get_uuid()) }}</span>
+                </span>
+                <!-- display the meet days, start meet time, and end meet time -->
+                <span class="collection-text col s12 m2 l3">
+                  {{ str(c.get_meet_days()) + " " + str(c.get_start_time()) + " - " + str(c.get_end_time()) }}
+                </span>
+                <!-- <span class="right grey-text darken-2">{{  str(c.get_uuid()) }}</span> -->
+                <span class="collection-text col s12 m3 l2">{{ str(c.get_instructor() )}}</span>
+                <form method="POST">
+                  <!-- hidden data -->
+                  <input
+                    id="class_"
+                    type="text"
+                    name="btn"
+                    value="{{ str(c.get_uuid()) }}"
+                    hidden>
+                  <input
+                    id="class_"
+                    type="text"
+                    name="class_"
+                    value="{{ str(c.get_uuid()) }}"
+                    hidden>
+                  <!-- edit action -->
+                  <button
+                    class="btn waves-effect waves-light col s5 m2 l2"
+                    type="submit"
+                    name="edit"
+                    style="margin-right: .75rem !important;"
+                    value="edit">
+                      <span class="white-text">Edit</span>
+                  </button>
 
-        {% else %}
-          <!-- loop through every class -->
-          {% for c in classes %}
-            <!-- if a class has the same semester_id -->
-            {% if int(c.get_semester_id()) == int(active_semester.get_uuid()) %}
-              <!-- materializecss collection item -->
-              <li class="collection-item">
-                <div class="row">
-                  <!-- display the class prefix, number, and database id -->
-                  <span class="col s12 m2 l3 valign">
-                    {{ c.get_title() + " "}}<span class="grey-text darken-2">{{ str(c.get_uuid()) }}</span>
-                  </span>
-                  <!-- display the meet days, start meet time, and end meet time -->
-                  <span class="col s12 m2 l3 valign">
-                    {{ str(c.get_meet_days()) + " " + str(c.get_start_time()) + " - " + str(c.get_end_time()) }}
-                  </span>
-                  <!-- <span class="right grey-text darken-2">{{  str(c.get_uuid()) }}</span> -->
-                  <span class="col s12 m3 l2 valign">{{ str(c.get_instructor() )}}</span>
-                  <form method="POST">
-                    <!-- hidden data -->
-                    <input
-                      id="class_"
-                      type="text"
-                      name="btn"
-                      value="{{ str(c.get_uuid()) }}"
-                      hidden>
-                    <input
-                      id="class_"
-                      type="text"
-                      name="class_"
-                      value="{{ str(c.get_uuid()) }}"
-                      hidden>
-                    <!-- edit action -->
-                    <button
-                      class="btn waves-effect waves-light col s5 m2 l2"
-                      type="submit"
-                      name="edit"
-                      style="margin-right: .75rem !important;"
-                      value="edit">
-                        <span class="white-text">Edit</span>
-                    </button>
+                  <!-- modal trigger -->
+                  <a class="waves-effect waves-light btn modal-trigger red" href="#modal{{ c.get_uuid() }}">DELETE</a>
 
-                    <!-- modal trigger -->
-                    <a class="waves-effect waves-light btn modal-trigger red" href="#modal{{ c.get_uuid() }}">DELETE</a>
-
-                    <!-- modal structure -->
-                    <div id="modal{{ c.get_uuid() }}" class="modal">
-                      <!-- display a reasonable warning -->
-                      <!-- TODO: delete all the assignments and notes once a semester gets deleted -->
-                      <div class="modal-content">
-                        <h4 class="red-text">Warning</h4>
-                        <p>
-                          Are you sure you want to delete your class
-                          <code>`{{ str(c.get_prefix()) + " " + str(c.get_course_number()) }}`</code>?
-                          Deleting this class will delete all notes and assignments related to it.
-                        </p>
-                      </div>
-                      <div class="modal-footer">
-                        <a class="modal-close waves-effect blue accent-3 btn-flat">
-                          <span class="white-text">Cancel</span>
-                        </a>
-                        <!-- delete action -->
-                        <button
-                          class="btn small waves-effect waves-light red darken-4"
-                          type="submit"
-                          name="delete"
-                          value="delete">
-                            <span class="white-text">Agree</span>
-                        </button>
-                      </div>
+                  <!-- modal structure -->
+                  <div id="modal{{ c.get_uuid() }}" class="modal">
+                    <!-- display a reasonable warning -->
+                    <!-- TODO: delete all the assignments and notes once a semester gets deleted -->
+                    <div class="modal-content">
+                      <h4 class="red-text">Warning</h4>
+                      <p>
+                        Are you sure you want to delete your class
+                        <code>`{{ str(c.get_prefix()) + " " + str(c.get_course_number()) }}`</code>?
+                        Deleting this class will delete all notes and assignments related to it.
+                      </p>
                     </div>
-                  </form>
-                </div>
-              </li>
+                    <div class="modal-footer">
+                      <a class="modal-close waves-effect blue accent-3 btn-flat">
+                        <span class="white-text">Cancel</span>
+                      </a>
+                      <!-- delete action -->
+                      <button
+                        class="btn small waves-effect waves-light red darken-4"
+                        type="submit"
+                        name="delete"
+                        value="delete">
+                          <span class="white-text">Agree</span>
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </li>
 
-            {% endif %}
+          {% endif %}
 
-          {% endfor %}
+        {% endfor %}
 
-        {% endif %}
+      {% endif %}
 
     </ul>
   </div>
@@ -267,15 +291,16 @@
           <label for="end_time">Enter End Time</label>
         </div>
       </div>
-      
-      <button
-        class="btn waves-effect waves-light right"
-        type="submit"
-        name="btn"
-        value="Add"
-        style="margin-bottom: 2rem !important;">
-          Add
-      </button>
+      <div class="row">
+        <button
+          class="btn waves-effect waves-light right col s12 m2 l2"
+          type="submit"
+          name="btn"
+          value="Add"
+          style="margin-bottom: 2rem !important;">
+            Add
+        </button>
+      </div>
       <input id="class_" type="text" name="delete" value="" hidden>
       <input id="class_" type="text" name="edit" value="" hidden>
     </form>
