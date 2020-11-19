@@ -117,11 +117,15 @@
           <label for="title">Note Title</label>
         </div>
         <div class="input-field col s12 m3 l3">
-          <select name="class_selector" selected="{{ class_.get_uuid() }}">
-            <option disabled value="{{ class_.get_uuid() }}">{{ class_.get_title() }}</option>
+          <select name="class_selector">
+            <option disabled value="{{ class_.get_uuid() }}">Choose your option</option>
             {% for c in classes %}
               {% if c.get_semester_id() == active_semester.get_uuid() %}
-                <option value="{{ c.get_uuid() }}">{{ c.get_title() }}</option>
+                {% if int(c.get_uuid()) == int(class_.get_uuid()) %}
+                  <option value="{{ c.get_uuid() }}" selected>{{ c.get_title() }}</option>
+                {% else %}
+                  <option value="{{ c.get_uuid() }}">{{ c.get_title() }}</option>
+                {% endif %}
               {% endif %}
             {% endfor %}
           </select>

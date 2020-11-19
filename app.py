@@ -138,9 +138,9 @@ def index(name=None):
 
     for c in index_classes:
         if (now.strftime("%a")[0] == "M" and "M" in c.get_meet_days()) \
-        or (now.strftime("%a")[:1] == "Tu" and "Tu" in c.get_meet_days()) \
+        or (now.strftime("%a")[:2] == "Tu" and "Tu" in c.get_meet_days()) \
         or (now.strftime("%a")[0] == "W" and "W" in c.get_meet_days()) \
-        or (now.strftime("%a")[:1] == "Th" and "Th" in c.get_meet_days()) \
+        or (now.strftime("%a")[:2] == "Th" and "Th" in c.get_meet_days()) \
         or (now.strftime("%a")[0] == "F" and "F" in c.get_meet_days()):
             basic_metrics['n_classes_today'] += 1
 
@@ -148,18 +148,18 @@ def index(name=None):
         if n.get_class_id() in classes_semesters:
             basic_metrics['total_notes'] += 1
 
-
     return render_template('index.html',
-        url_for         = url_for,
-        semesters       = semesters,
-        str             = str,
-        active_semester = active_semester,
-        user            = user,
-        assignments     = index_assignments,
-        notes           = index_notes,
-        classes         = index_classes,
-        int             = int,
-        basic_metrics   = basic_metrics
+        url_for           = url_for,
+        semesters         = semesters,
+        str               = str,
+        active_semester   = active_semester,
+        user              = user,
+        assignments       = index_assignments,
+        notes             = index_notes,
+        classes           = index_classes,
+        int               = int,
+        basic_metrics     = basic_metrics,
+        len               = len
     )
 
 @app.route('/notes/edit/<note_id>', methods=['GET', 'POST'])
@@ -169,7 +169,7 @@ def edit_note(note_id=None):
 
     note = None
     for n in db.notes:
-        if n.get_uuid() == int(note_id):
+        if int(n.get_uuid()) == int(note_id):
             note = n
             break
 
@@ -181,8 +181,6 @@ def edit_note(note_id=None):
 
     if request.method == "POST":
         if request.form.get('save') == 'save':
-            print(request.form)
-
             temp_datetime = datetime.now()
             date = str(temp_datetime.strftime("%b")) + " " + str(int(temp_datetime.strftime("%d"))) + ", " + str(temp_datetime.strftime("%G")) + " " + str(temp_datetime.strftime("%X"))
 
@@ -387,7 +385,8 @@ def assignments(name=None):
         active_semester = active_semester,
         classes         = classes,
         assignments     = assignments,
-        str             = str
+        str             = str,
+        style_height    = db.get_n_assignments_style_height
     )
 
 # Edit a class database object

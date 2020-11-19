@@ -369,7 +369,12 @@ class DatabaseWrapper:
         return
 
     def get_n_assignments(self, class_id):
-        return
+        self.c.execute('SELECT * FROM ASSIGNMENT WHERE CLASS_ID=?', (int(class_id),))
+        return len(self.c.fetchall())
+
+    def get_n_assignments_style_height(self, class_id):
+        self.c.execute('SELECT * FROM ASSIGNMENT WHERE CLASS_ID=?', (int(class_id),))
+        return len(self.c.fetchall()) * 55
 
     """
     Note operations

@@ -29,11 +29,18 @@
 
   <!-- MathJAX library -->
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script
-    type="text/javascript"
-    id="MathJax-script"
-    async
-    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      },
+      svg: {
+        fontCache: 'global'
+      }
+    };
+  </script>
+  <script type="text/javascript" id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
   </script>
 </head>
 <body>
@@ -103,6 +110,11 @@
   <!-- Most recent notes (read-only) -->
   <div class="container">
     <h5 class="blue-text">Recent Notes</h5>
+
+    {% if len(notes) == 0 %}
+      <p>No notes written yet.</p>
+    {% endif %}
+
     {% for note in notes %}
     <div class="row">
       <div class="col s12 m12 l12">
@@ -138,17 +150,17 @@
       <div class="col s12 m12 l12">
         <ul class="collection with-header z-depth-2">
           <li class="collection-header orange-text text-darken-3">
-            <h6>{{ c.get_title() }}</h6>
+            <h5>{{ c.get_title() }}</h5>
           </li>
           {% for a in assignments %}
             {% if int(a.get_class_id()) == int(c.get_uuid()) and not a.get_completed() %}
               <li class="collection-item">
-                <span class="title grey-text text-darken-2">{{ a.get_title() }}</span>
+                <h6 class="title">{{ a.get_title() }}</h6>
                 <p>
-                  <span class="left">{{ a.get_due_date() }}</span>
-                  <span class="right red-text accent-2">
+                  <h6 class="left grey-text text-darken-2">{{ a.get_due_date() }}</h6>
+                  <h6 class="right red-text accent-2">
                       INCOMPLETE
-                  </span>
+                  </h6>
                   <br>
                   <a href="{{ a.get_link() }}">{{ a.get_link() }}</a>
                 </p>
