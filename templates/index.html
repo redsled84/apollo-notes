@@ -78,17 +78,22 @@
   <div class="container">
     <h2>Hi, <span class="blue-text accent-3">{{ user.first }}</span> :)</h2>
     <h5>
-      <span class="red-text accent-3 right">0
-        <span class="black-text">/10</span>
+      {% if basic_metrics['assignments_completed'] == basic_metrics['total_assignments'] %}
+      <span class="green-text accent-3 right">
+      {% else %}
+      <span class="red-text accent-3 right">
+      {% endif %}
+        {{ basic_metrics['assignments_completed'] }}<span class="black-text">/{{ basic_metrics['total_assignments'] }}
+      </span>
       </span> Assignments completed
     </h5>
     <h5>
-      <span class="red-text accent-3 right">1
-        <span class="black-text">/2</span>
+      <span class="red-text accent-3 right">
+        {{ basic_metrics['n_classes_today'] }}<span class="black-text">/{{ basic_metrics['n_total_classes']}}</span>
       </span> Classes scheduled today
     </h5>
     <h5>
-      <span class="blue-text accent-3 right">1
+      <span class="blue-text accent-3 right">{{ basic_metrics['total_notes'] }}
       </span> Notes taken
     </h5>
   </div>
@@ -98,25 +103,29 @@
   <!-- Most recent notes (read-only) -->
   <div class="container">
     <h5 class="blue-text">Recent Notes</h5>
+    {% for note in notes %}
     <div class="row">
       <div class="col s12 m12 l12">
         <div class="card white darken-1 z-depth-2">
           <div class="card-content">
-            <span class="card-title teal-text text-darken-4">Ch 26
-              <span class="right black-text">11.2.2020</span>
+            <span class="card-title">{{ note.get_title() }}
+              <span class="right grey-text text-darken-1">{{ note.get_date() }}</span>
             </span>
             <p class="grey-text text-darken-2">
-             Now suppose we disconnect the battery from the plates.
-             The plates are not connected with a wire to anything now,
-             so the plates remain charged. The capacitor has ...
-           </p>
+             {{ note.get_body()[:500] | safe }}...
+            </p>
           </div>
           <div class="card-action">
-            <span class="flair orange-text text-darken-3">PHYS 181</span>
+            {% for c in classes %}
+              {% if int(c.get_uuid()) == int(note.get_class_id()) %}
+              <span class="flair orange-text text-darken-3">{{ c.get_title() }}</span>
+              {% endif %}
+            {% endfor %}
           </div>
         </div>
       </div>
     </div>
+    {% endfor %}
   </div>
 
   <br>
@@ -124,78 +133,44 @@
   <!-- Due Assignments (read-only) -->
   <div class="container">
     <h5 class="blue-text">Due Assignments</h5>
+    {% for c in classes %}
     <div class="row">
       <div class="col s12 m12 l12">
         <ul class="collection with-header z-depth-2">
           <li class="collection-header orange-text text-darken-3">
-            <h6>CS 202</h6>
+            <h6>{{ c.get_title() }}</h6>
           </li>
-          <li class="collection-item">
-            <span class="title teal-text text-darken-4">Project Assignment 9</span>
-            <p>
-              <span class="left">11.16.2020</span>
-              <span class="right">
-                <i class="small right material-icons red-text">warning</i>INCOMPLETE
-              </span>
-              <br>
-              <a href="#">GitHub</a>
-            </p>
-          </li>
-          <li class="collection-item">
-            <span class="title teal-text text-darken-4">Project Assignment 10</span>
-            <p>
-              <span class="left">11.27.2020</span>
-              <span class="right">
-                <i class="small right material-icons red-text">warning</i>INCOMPLETE
-              </span>
-              <br>
-              <a href="#">GitHub</a>
-            </p>
-          </li>
+          {% for a in assignments %}
+            {% if int(a.get_class_id()) == int(c.get_uuid()) and not a.get_completed() %}
+              <li class="collection-item">
+                <span class="title grey-text text-darken-2">{{ a.get_title() }}</span>
+                <p>
+                  <span class="left">{{ a.get_due_date() }}</span>
+                  <span class="right red-text accent-2">
+                      INCOMPLETE
+                  </span>
+                  <br>
+                  <a href="{{ a.get_link() }}">{{ a.get_link() }}</a>
+                </p>
+              </li>
+            {% endif %}
+          {% endfor %}
         </ul>
       </div>
     </div>
-    <div class="row">
-      <div class="col s12 m12 l12">
-        <ul class="collection with-header z-depth-2">
-          <li class="collection-header orange-text text-darken-3"><h6>PHYS 181</h6></li>
-          <li class="collection-item">
-            <span class="title teal-text text-darken-4">Week 12: Chapter 27</span>
-            <p>
-              <span class="left">11.13.2020</span>
-              <span class="right">
-                <i class="small right material-icons red-text">warning</i>INCOMPLETE
-              </span>
-              <br>
-              <a href="#">WebAssign</a>
-            </p>
-          </li>
-          <li class="collection-item">
-            <span class="title teal-text text-darken-4">27.1 Q1, Q2, Q3</span>
-            <p>
-              <span class="left">11.16.2020</span>
-              <span class="right">
-                <i class="small right material-icons red-text">warning</i>INCOMPLETE
-              </span>
-              <br>
-              <a href="#">WebCampus</a>
-            </p>
-          </li>
-        </ul>
-      </div>
-    </div>
+    {% endfor %}
   </div>
 
   <br>
 
   <!-- Chart.js visualization of today's schedule -->
-  <div class="container">
+  <!-- <div class="container">
     <h5 class="blue-text">Today's Schedule</h5>
     <div class="row">
       <canvas id="todaySchedule"></canvas>
     </div>
   </div>
-  
+ -->  
   <div style="padding-bottom: 1rem"></div>
 
   <style type="text/css">

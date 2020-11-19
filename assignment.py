@@ -66,7 +66,7 @@ class Assignment:
         return self.weight
 
     def get_class_id(self):
-        return self.class_id
+        return int(self.class_id)
 
     # setters
     def set_uuid(self, uid):

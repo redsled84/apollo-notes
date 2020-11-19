@@ -228,6 +228,7 @@
 
     <div class="container">
       {% for c in classes %}
+    {% if c.get_semester_id() == active_semester.get_uuid() %}
       <div class="collection with-header">
         <li class="collection-header">
           <h5 class="blue-text lighten-2">{{ c.get_title() }}
@@ -308,7 +309,7 @@
 
           </form>
         {% endfor %}
-
+    {% endif %}
       </div>
       {% endfor %}
     </div>
@@ -337,7 +338,18 @@
 
   <script type="text/javascript">
     $(function() {
-      scatterAssignment([ {%for a in assignments %}{{ a.to_json()|tojson }},{% endfor %} ], [ {%for c in classes %}{{ c.to_json()|tojson }},{% endfor %} ]);
+      scatterAssignment([
+        {%for a in assignments %}
+          {{ a.to_json()|tojson }},
+        {% endfor %}
+      ],
+      [
+        {%for c in classes %}
+          {% if c.get_semester_id() == active_semester.get_uuid() %}
+            {{ c.to_json()|tojson }},
+          {% endif %}
+        {% endfor %}
+      ]);
       $('#check_id').prop('checked', false);
       $('#hidden_data').prop('value', $('#check_id').prop('checked'));
     });

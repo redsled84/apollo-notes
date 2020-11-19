@@ -451,14 +451,14 @@ class DatabaseWrapper:
         self.c.execute("SELECT * FROM NOTE");
         return self.c.fetchall()
 
-    def select_note_with_id(self, class_id):
-        self.c.execute("SELECT * FROM NOTE WHERE CLASS_ID=?", (class_id,))
+    def select_note_with_id(self, note_id):
+        self.c.execute("SELECT * FROM NOTE WHERE NOTE_ID=?", (note_id,))
         return self.c.fetchone()
 
+    # get number of notes with equal class id
     def get_n_notes(self, class_id):
-        return
-
-    # get number of notes
+        self.c.execute("SELECT * FROM NOTE WHERE CLASS_ID=?", (class_id,))
+        return len(self.c.fetchall())
 
     """
     Misc

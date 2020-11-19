@@ -30,6 +30,21 @@ months = {
     "Dec": 11
 }
 
+month_days = {
+    "Jan": 31,
+    "Feb": 28.25,
+    "Mar": 31,
+    "Apr": 30,
+    "May": 31,
+    "Jun": 30,
+    "Jul": 31,
+    "Aug": 31,
+    "Sep": 30,
+    "Oct": 31,
+    "Nov": 30,
+    "Dec": 31
+}
+
 def date_sort(e):
     return months[e.get_due_date()[0:3]] * 100 + int(e.get_due_date().split()[1][0:-1])
 
@@ -87,12 +102,64 @@ def index(name=None):
     active_semester = db.active_semester
     semesters = db.semesters
 
+    # todays schedule
+    index_classes = [c for c in db.classes
+                    if int(c.get_semester_id()) == int(active_semester.get_uuid())]
+
+    classes_semesters = [c.get_uuid() for c in db.classes
+                                        if int(c.get_semester_id()) == int(active_semester.get_uuid())]
+
+    now = datetime.now()
+    # this semesters assignments that are due and upcoming
+    index_assignments = [a for a in db.assignments
+                    if a.get_class_id() in classes_semesters
+                       and a.get_due_date()[0:3] == str(now.strftime("%b"))]
+
+    # most recent notes
+    index_notes = [n for n in db.notes
+                if n.get_class_id() in classes_semesters
+                    and (months[n.get_date()[0:3]] + int(n.get_date().split(',')[0][-2:]))
+                    - (int(now.month) + int(now.day)) < 50]
+
+    # all basic metrics apply to a given active semester
+    basic_metrics = {
+        "assignments_completed": 0,
+        "total_assignments": 0,
+        "n_classes_today": 0,
+        "n_total_classes": len(index_classes),
+        "total_notes": 0
+    }
+
+    for a in db.assignments:
+        if a.get_class_id() in classes_semesters:
+            if a.get_completed():
+                basic_metrics['assignments_completed'] += 1
+            basic_metrics['total_assignments'] += 1
+
+    for c in index_classes:
+        if (now.strftime("%a")[0] == "M" and "M" in c.get_meet_days()) \
+        or (now.strftime("%a")[:1] == "Tu" and "Tu" in c.get_meet_days()) \
+        or (now.strftime("%a")[0] == "W" and "W" in c.get_meet_days()) \
+        or (now.strftime("%a")[:1] == "Th" and "Th" in c.get_meet_days()) \
+        or (now.strftime("%a")[0] == "F" and "F" in c.get_meet_days()):
+            basic_metrics['n_classes_today'] += 1
+
+    for n in db.notes:
+        if n.get_class_id() in classes_semesters:
+            basic_metrics['total_notes'] += 1
+
+
     return render_template('index.html',
         url_for         = url_for,
         semesters       = semesters,
         str             = str,
         active_semester = active_semester,
-        user            = user
+        user            = user,
+        assignments     = index_assignments,
+        notes           = index_notes,
+        classes         = index_classes,
+        int             = int,
+        basic_metrics   = basic_metrics
     )
 
 @app.route('/notes/edit/<note_id>', methods=['GET', 'POST'])
@@ -116,12 +183,8 @@ def edit_note(note_id=None):
         if request.form.get('save') == 'save':
             print(request.form)
 
-            date = ""
             temp_datetime = datetime.now()
-            date += temp_datetime.strftime("%b") + " "
-            date += str(int(temp_datetime.strftime("%d"))) + ","
-            date += temp_datetime.strftime("%G") + " "
-            date += temp_datetime.strftime("%X")
+            date = str(temp_datetime.strftime("%b")) + " " + str(int(temp_datetime.strftime("%d"))) + ", " + str(temp_datetime.strftime("%G")) + " " + str(temp_datetime.strftime("%X"))
 
             title      = request.form.get('title')
             author     = request.form.get('author')
@@ -190,7 +253,8 @@ def notes(name=None):
         notes           = notes,
         user            = user,
         int             = int,
-        len             = len
+        len             = len,
+        get_n_notes     = db.get_n_notes
     )
 
 @app.route('/assignments/edit/<assignment_id>', methods=['GET', 'POST'])
