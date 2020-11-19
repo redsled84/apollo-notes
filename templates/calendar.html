@@ -1,3 +1,21 @@
+<!--
+
+  Copyright 2020 Lucas Bernard Black
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+-->
+
 <!DOCTYPE html>
 <head>
   <title>Apollo Settings</title>
@@ -11,6 +29,7 @@
   <!-- Compiled and minified JavaScript -->
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script type="text/javascript" src="{{ url_for('static', filename='js/calendar.js') }}"></script>
   <script>
     $(document).ready(function(){
       $('select').formSelect();
@@ -63,6 +82,94 @@
       margin-top: 1rem !important;
     }
 
+    @media (min-width:1379px) {
+      .tabs-content {
+        position: relative;
+        height:65vh !important;
+        width:100%;
+      }
+    }
+
+    @media (min-width:1279px) {
+      .tabs-content {
+        position: relative;
+        height:75vh !important;
+        width:100%;
+      }
+    }
+
+    @media (min-width:1100px) {
+      .tabs-content {
+        position: relative;
+        height:90vh !important;
+        width:100%;
+      }
+    }
+
+    @media (min-width:1000px) {
+      .tabs-content {
+        position: relative;
+        height:68vh !important;
+        width:100%;
+      }
+    }
+
+    @media (min-width:900px) {
+      .tabs-content {
+        position: relative;
+        height:75vh !important;
+        width:100%;
+      }
+    }
+
+    @media (min-width:800px) {
+      .tabs-content {
+        position: relative;
+        height:72vh !important;
+        width:100%;
+      }
+    }
+
+    @media (min-width:700px) {
+      .tabs-content {
+        position: relative;
+        height:60vh !important;
+        width:100%;
+      }
+    }
+
+    @media (min-width:600px) {
+      .tabs-content {
+        position: relative;
+        height:55vh !important;
+        width:100%;
+      }
+    }
+
+    @media (min-width:500px) {
+      .tabs-content {
+        position: relative;
+        height:55vh !important;
+        width:100%;
+      }
+    }
+
+    @media (min-width:400px) {
+      .tabs-content {
+        position: relative;
+        height:45vh !important;
+        width:100%;
+      }
+    }
+
+    @media (min-width:300px) {
+      .tabs-content {
+        position: relative;
+        height:50vh !important;
+        width:100%;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -102,36 +209,30 @@
 
   <br>
 
+
   <div class="container">
+    <h5 class="blue-text">Calendar</h5>
     <ul id="tabs-swipe" class="tabs">
-      <li class="tab col s3"><a class="active blue-text" href="#swipe-view">Weekly Schedule</a></li>
-      <li class="tab col s3"><a class="blue-text" href="#swipe-edit">Time Requirements</a></li>
+      <li class="tab col s3"><a class="active grey-text text-darken-1" href="#swipe-schedule">Weekly Class Schedule</a></li>
+      <li class="tab col s3"><a class="grey-text text-darken-1" href="#swipe-time">Weekly Time Requirements</a></li>
     </ul>
-  </div>
-
-  <br>
-
-  <div id="swipe-view">
-    <div class="container">
-      <h5 class="blue-text">Weekly Schedule</h5>
+    <div id="swipe-schedule" class="tabs-content">
       <div class="row">
         <canvas id="weeklySchedule"></canvas>
       </div>
+      <br>
     </div>
-  </div>
-
-  <div id="swipe-edit">
-    <!-- show the weekly schedule considering all the enrolled class times -->
-    <div class="container">
-      <h5 class="blue-text">Weekly Time Requirements</h5>
+    <div id="swipe-time" class="tabs-content">
+      <!-- show the weekly schedule considering all the enrolled class times -->
       <div class="row">
-        <canvas id="timeRequirements"></canvas>
+        <div class="chart-container" class='tabs-content'>
+          <canvas id="timeRequirements"></canvas>
+        </div>
       </div>
     </div>
   </div>
 
   <br>
-
 
   <!-- table of all the database classes related to the active semester -->
   <div class="container">
@@ -147,9 +248,9 @@
       {% else %}
         <li class="collection-item" style="padding-bottom:0rem !important;">
           <div class="row">
-            <span class="col s3 grey-text darken-3" style="font-size: 12px;">Title</span>
-            <span class="col s3 grey-text darken-3" style="font-size: 12px;">Meeting Time</span>
-            <span class="col s3 grey-text darken-3" style="font-size: 12px;">Instructor</span>
+            <span class="col s3 grey-text" style="font-size: 12px;">Title</span>
+            <span class="col s3 grey-text" style="font-size: 12px;">Meeting Time</span>
+            <span class="col s3 grey-text" style="font-size: 12px;">Instructor</span>
           </div>
         </li>
         <!-- loop through every class -->
@@ -162,13 +263,13 @@
               <div class="row">
                 <!-- display the class prefix, number, and database id -->
                 <span class="collection-text col s12 m2 l3">
-                  {{ c.get_title() + " "}}<span class="grey-text darken-2">{{ str(c.get_uuid()) }}</span>
+                  {{ c.get_title() + " "}}<span class="grey-text">{{ str(c.get_uuid()) }}</span>
                 </span>
                 <!-- display the meet days, start meet time, and end meet time -->
                 <span class="collection-text col s12 m2 l3">
                   {{ str(c.get_meet_days()) + " " + str(c.get_start_time()) + " - " + str(c.get_end_time()) }}
                 </span>
-                <!-- <span class="right grey-text darken-2">{{  str(c.get_uuid()) }}</span> -->
+                <!-- <span class="right grey-text">{{  str(c.get_uuid()) }}</span> -->
                 <span class="collection-text col s12 m3 l2">{{ str(c.get_instructor() )}}</span>
                 <form method="POST">
                   <!-- hidden data -->
@@ -210,7 +311,7 @@
                       </p>
                     </div>
                     <div class="modal-footer">
-                      <a class="modal-close waves-effect blue accent-3 btn-flat">
+                      <a class="modal-close waves-effect teal lighten-2 btn-flat">
                         <span class="white-text">Cancel</span>
                       </a>
                       <!-- delete action -->
@@ -218,8 +319,9 @@
                         class="btn small waves-effect waves-light red accent-2"
                         type="submit"
                         name="delete"
-                        value="delete">
-                          <span class="white-text">Agree</span>
+                        value="delete"
+                        style="margin: 0 !important;">
+                          <span class="white-text">Delete</span>
                       </button>
                     </div>
                   </div>
@@ -325,8 +427,8 @@
             'Added the class`' + document.getElementById('prefix').value + ' ' + document.getElementById('course_number').value + '`'})"
           name="btn"
           value="Add"
-          style="margin-bottom: 2rem !important;">
-            Add
+          style="margin-bottom: 1rem !important;">
+            Add Class
         </button>
       </div>
       <input id="class_" type="text" name="delete" value="" hidden>
@@ -335,10 +437,10 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='js/calendar.js') }}"></script>
-
   <script type="text/javascript">
+    adjustScaleFactor();
     timeReq([ {%for c in classes %}{{ c.to_json()|tojson }},{% endfor %} ]);
     weeklySchedule([ {%for c in classes %}{{ c.to_json()|tojson }},{% endfor %} ]);
+    window.addEventListener('resize', adjustScaleFactor);
   </script>
 </body>

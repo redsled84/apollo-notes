@@ -1,26 +1,51 @@
+<!--
+
+  Copyright 2020 Lucas Bernard Black
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+-->
+
 <!DOCTYPE html>
 <head>
   <title>Apollo Settings</title>
 
   <!-- MathJAX library -->
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script
-    type="text/javascript"
-    id="MathJax-script"
-    async
+  <script type="text/javascript" id="MathJax-script" async
     src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
   </script>
 
   <!-- Compiled and minified JavaScript -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script type="text/javascript" src="{{ url_for('static', filename='js/assignment.js') }}"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
   <script>
     $(document).ready(function(){
       $('select').formSelect();
     });
+
+    $(document).ready(function(){
+      $('.datepicker').datepicker();
+    });
+
+    $(document).ready(function(){
+      $('.modal').modal();
+    });
   </script>
   <!-- Compiled and minified CSS -->
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name = "viewport" content = "width=device-width, initial-scale=1">
   <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
@@ -48,7 +73,7 @@
         </li>
         <li>
           <a href="{{ url_for('notes') }}">Notes</a>
-        </li> 
+        </li>                
         <li>
           <a href="{{ url_for('assignments') }}">Assignments</a>
         </li>
@@ -66,34 +91,127 @@
 
   <br>
 
-  <div class="container">
-    <form>
+  <div class="container new-note">
+    <h5 class="blue-text">Add a new note</h5>
+    <form method="POST">
       <div class="row">
-        <div class="input-field col s12">
-          <div class="select-wrapper">
-            <svg
-              class="caret"
-              height="24"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg">
-                <path d="M7 10l5 5 5-5z"></path><path d="M0 0h24v24H0z" fill="none"></path>
-            </svg>
-            <select tabindex="-1">
-              <option value="" disabled="" selected="">Choose your class</option>
-            </select>
-          </div>
-          <label>Select a class</label>
+        <div class="input-field col s12 m9 l9">
+          <input
+            id="title"
+            type="text"
+            class="validate"
+            name="title"
+            required=""
+            aria-required="true">
+          <label for="title">Note Title</label>
         </div>
+        <div class="input-field col s12 m3 l3">
+          <select name="class_selector">
+            <option value="" disabled selected>Choose your option</option>
+            {% for c in classes %}
+              {% if c.get_semester_id() == active_semester.get_uuid() %}
+                <option value="{{ c.get_uuid() }}">{{ c.get_title() }}</option>
+              {% endif %}
+            {% endfor %}
+          </select>
+          <label>Select a Class</label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row">
+          <div class="row">
+            <div class="input-field col s12">
+              <textarea id="note_body" class="materialize-textarea" name="note_body" required ></textarea>
+              <label for="note_body">Note Body</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
         <button
-          class="btn waves-effect waves-light right"
+          class="btn waves-effect waves-light right col s12 m2 l2"
           type="submit"
-          name="action">
-            Select
+          name="btn"
+          value="Add"
+          style="margin-top: 0rem !important;">
+            Add Note
         </button>
       </div>
+
+      <input type="text" name="author" value="{{ user.first + ' ' + user.last }}" hidden>
     </form>
   </div>
+
+  <br>
+
+    {% for c in classes %}
+      <div class="container">
+
+        <h5>{{ c.get_title() }}</h5>
+
+          {% for note in notes %}
+            <form method="POST">
+            {% if int(c.get_uuid()) == int(note.get_class_id()) %}
+              <input id="note_id" type="text" name="note_id" value="{{ note.get_uuid() }}" hidden>
+              <div class="row">
+                <div class="col s12">
+                  <div class="card">
+                    <div class="card-content">
+                      <span class="card-title">{{ note.get_title() }}<h6 class="right grey-text">{{ note.get_date() }}</h6></span>
+                      <p>{{ note.get_body() | safe }}</p>
+                    </div>
+                    <div class="card-action">
+                      <div class="row" style="margin:0 !important;">
+                        <!-- modal trigger -->
+                        <a class="waves-effect waves-light small btn modal-trigger red accent-2 right" href="#modal{{ note.get_uuid() }}">DELETE</a>
+
+                        <!-- modal structure -->
+                        <div id="modal{{ note.get_uuid() }}" class="modal">
+                          <!-- display a reasonable warning -->
+                          <div class="modal-content">
+                            <h4 class="red-text">Warning</h4>
+                            <p>
+                              Are you sure you want to delete your note
+                              <code>`{{ str(note.get_title()) }}`</code>?
+                            </p>
+                          </div>
+                          <div class="modal-footer">
+                            <a class="modal-close waves-effect teal lighten-2 btn-flat">
+                              <span class="white-text">Cancel</span>
+                            </a>
+                            <!-- delete action -->
+                            <button
+                              class="btn small waves-effect waves-light red accent-2"
+                              type="submit"
+                              name="delete"
+                              value="delete"
+                              style="margin: 0 !important;">
+                                <span class="white-text">Delete</span>
+                            </button>
+                          </div>
+                        </div>
+                        <button
+                          class="small btn-flat waves-effect teal lighten-2 col s2 right"
+                          type="submit"
+                          name="edit"
+                          style="margin-right: .75rem !important;"
+                          value="{{ note.get_uuid() }}">
+                            <span class="white-text">Edit</span>
+                        </button>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+            </form>
+          {% endfor %}
+
+      </div>
+      <br>
+    {% endfor %}
 
   <style type="text/css">
     .badge {
@@ -109,4 +227,7 @@
     }
   </style>
 
+  <script type="text/javascript">
+    
+  </script>
 </body>

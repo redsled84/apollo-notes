@@ -35,11 +35,7 @@
     });
 
     $(document).ready(function(){
-      $('.timepicker').timepicker();
-    });
-
-    $(document).ready(function(){
-      $('.modal').modal();
+      $('.datepicker').datepicker();
     });
   </script>
   
@@ -105,90 +101,44 @@
 
   <br>
 
-  <div class="container new-class">
-    <h5 class="blue-text">Edit class <code>`{{ course.get_title() }}`</code></h5>
+  <div class="container new-note">
+    <h5 class="blue-text">Edit a note</h5>
     <form method="POST">
       <div class="row">
-        <div class="input-field col s12 m6 l4">
+        <div class="input-field col s12 m9 l9">
           <input
-            id="prefix"
+            id="title"
             type="text"
             class="validate"
-            name="prefix"
+            name="title"
             required=""
             aria-required="true"
-            value="{{ course.get_prefix() }}">
-          <label for="prefix">Course Prefix</label>
+            value="{{ note.get_title() }}">
+          <label for="title">Note Title</label>
         </div>
-        <div class="input-field col s12 m6 l4">
-          <input
-            id="course_number"
-            type="text"
-            class="validate"
-            name="course_number"
-            required=""
-            aria-required="true"
-            value="{{ course.get_course_number() }}">
-          <label for="course_number">Course Number</label>
-        </div>
-        <div class="input-field col s12 m12 l4">
-          <input
-            id="instructor"
-            type="text"
-            class="validate"
-            name="instructor"
-            required=""
-            aria-required="true"
-            value="{{ course.get_instructor() }}">
-          <label for="instructor">Instructor</label>
+        <div class="input-field col s12 m3 l3">
+          <select name="class_selector" selected="{{ class_.get_uuid() }}">
+            <option disabled value="{{ class_.get_uuid() }}">{{ class_.get_title() }}</option>
+            {% for c in classes %}
+              {% if c.get_semester_id() == active_semester.get_uuid() %}
+                <option value="{{ c.get_uuid() }}">{{ c.get_title() }}</option>
+              {% endif %}
+            {% endfor %}
+          </select>
+          <label>Select a Class</label>
         </div>
       </div>
       <div class="row">
-        <div class="input-field col s12 m6 l6">
-          <input
-            id="meet_days"
-            type="text"
-            class="validate"
-            name="meet_days"
-            required=""
-            aria-required="true"
-            value="{{ course.get_meet_days() }}">
-          <label for="meet_days">Meet Days</label>
-        </div>
-        <div class="input-field col s12 m6 l6">
-          <input
-            disabled
-            id="disabled"
-            type="text"
-            class="validate"
-            required=""
-            aria-required="true"
-            value="{{ course.get_semester_id() }}">
-          <label for="disabled">Semester ID</label>
+        <div class="row">
+          <div class="row">
+            <div class="input-field col s12">
+              <textarea id="note_body" class="materialize-textarea" name="note_body" required>{{ note.get_body() }}</textarea>
+              <label for="note_body">Note Body</label>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="row">
-        <div class="input-field col s12 m6 l6">
-          <input
-            type="text"
-            class="timepicker"
-            name="start_time"
-            required=""
-            aria-required="true"
-            value="{{ course.get_start_time() }}">
-          <label for="start_time">Enter Start Time</label>
-        </div>
-        <div class="input-field col s12 m6 l6">
-          <input
-            type="text"
-            class="timepicker"
-            name="end_time"
-            required=""
-            aria-required="true"
-            value="{{ course.get_end_time() }}">
-          <label for="end_time">Enter End Time</label>
-        </div>
-      </div>
+
       <div class="row">
         <div class="right">
           <button
@@ -199,15 +149,20 @@
           ><span class="white-text">Cancel</span>
           </button>
           <button
-            class="btn waves-effect waves-light"
+            class="btn waves-effect waves-light right"
             type="submit"
             name="save"
             value="save"
-          ><span class="white-text">Save Edits</span>
+            style="margin-top: 0rem !important; margin-left: 0.75rem !important">
+              Save Edits
           </button>
         </div>
       </div>
+
+      <input type="text" name="author" value="{{ user.first + ' ' + user.last }}" hidden>
     </form>
   </div>
 
+  <script type="text/javascript">
+  </script>
 </body>

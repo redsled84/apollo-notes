@@ -1,3 +1,21 @@
+<!--
+
+  Copyright 2020 Lucas Bernard Black
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+-->
+
 <!DOCTYPE html>
 <head>
   <title>Apollo Settings</title>
@@ -9,11 +27,21 @@
   </script>
 
   <!-- Compiled and minified JavaScript -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script type="text/javascript" src="{{ url_for('static', filename='js/assignment.js') }}"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
   <script>
     $(document).ready(function(){
       $('select').formSelect();
+    });
+
+    $(document).ready(function(){
+      $('.datepicker').datepicker();
+    });
+
+    $(document).ready(function(){
+      $('.modal').modal();
     });
   </script>
   <!-- Compiled and minified CSS -->
@@ -64,33 +92,228 @@
   <br>
 
   <div class="container">
-    <form>
+    <h5 class="blue-text">Assignment History</h5>
+
+    <div class="row">
+      <div class="chart-container">
+        <canvas id="scatterAssignment"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <br>
+
+  <div class="container new-assignment">
+    <h5 class="blue-text">Add a new assignment</h5>
+    <form method="POST">
       <div class="row">
-        <div class="input-field col s12">
-          <div class="select-wrapper">
-            <svg
-              class="caret"
-              height="24"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg">
-                <path d="M7 10l5 5 5-5z"></path><path d="M0 0h24v24H0z" fill="none"></path>
-            </svg>
-            <select tabindex="-1">
-              <option value="" disabled="" selected="">Choose your class</option>
-            </select>
-          </div>
-          <label>Select a class</label>
+        <div class="input-field col s12 m6 l6">
+          <input
+            id="title"
+            type="text"
+            class="validate"
+            name="title"
+            required=""
+            aria-required="true">
+          <label for="title">Title</label>
         </div>
+        <div class="input-field col s12 m3 l3">
+          <input
+            id="due_date"
+            type="text"
+            class="datepicker"
+            name="due_date"
+            required=""
+            aria-required="true">
+          <label for="due_date">Due Date</label>
+        </div>
+        <div class="input-field col s12 m3 l3">
+          <select name="class_selector">
+            <option value="" disabled selected>Choose your option</option>
+            {% for c in classes %}
+              {% if c.get_semester_id() == active_semester.get_uuid() %}
+                <option value="{{ c.get_uuid() }}">{{ c.get_title() }}</option>
+              {% endif %}
+            {% endfor %}
+          </select>
+          <label>Select a Class</label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="input-field col s12 m2 l2">
+          <input
+            id="points"
+            type="text"
+            class="validate"
+            name="points">
+          <label for="points">Points</label>
+        </div>
+        <div class="input-field col s12 m2 l2">
+          <input
+            id="max_points"
+            type="text"
+            class="validate"
+            name="max_points">
+          <label for="max_points">Max Points</label>
+        </div>
+        <div class="input-field col s12 m2 l2">
+          <input
+            id="weight"
+            type="text"
+            class="validate"
+            name="weight">
+          <label for="weight">Total Weight</label>
+        </div>
+        <div class="input-field col s12 m4 l4">
+          <input
+            id="link"
+            type="text"
+            class="validate"
+            name="link">
+          <label for="link">Link</label>
+        </div>
+        <div class="input-field col s12 m2 l2">
+          <p>
+            <label id="label_id">
+              <input type="checkbox" id="check_id"/>
+              <span id="span_id">Completed</span>
+            </label>
+          </p>
+        </div>
+      </div>
+
+      <input type="text" id="hidden_data" name="completed" hidden/>
+
+      <div class="row">
         <button
-          class="btn waves-effect waves-light right"
+          class="btn waves-effect waves-light right col s12 m2 l2"
           type="submit"
-          name="action">
-            Select
+          onclick="M.toast({html: document.getElementById('prefix').value==='' ?
+            'Please fill out the rest of the form' :
+            'Added the class`' + document.getElementById('prefix').value + ' ' + document.getElementById('course_number').value + '`'})"
+          name="btn"
+          value="Add"
+          style="margin-bottom: 1rem !important;">
+            Add Assignment
         </button>
       </div>
     </form>
   </div>
+
+  <br>
+
+  <form method="POST">
+    <div class="container">
+      <div class="row">
+        <div class="input-field col s12 m3 l3">
+          <select name="sort_selector">
+            <option value="" disabled selected>Sort by</option>
+            <option value="date">Date</option>
+            <option value="title">Title</option>
+            <option value="complete">Completeness</option>
+            <option value="grade">Grade</option>
+          </select>
+        </div>
+        <button
+          class="btn waves-effect waves-light col s12 m1 l1"
+          type="submit"
+          name="btn"
+          value="Sort"
+          style="margin-top: 1.65rem !important;">
+            Sort
+        </button>
+      </div>
+    </div>
+  </form>
+
+    <div class="container">
+      {% for c in classes %}
+      <div class="collection with-header">
+        <li class="collection-header">
+          <h5 class="blue-text lighten-2">{{ c.get_title() }}
+            <span class="grey-text">{{ c.get_uuid() }}</span>
+          </h5>
+        </li>
+
+        {% for a in assignments %}
+
+          <form method="POST">
+          {% if a.get_class_id() == c.get_uuid() %}
+
+            <input id="assignment_id" type="text" name="assignment_id" value="{{ a.get_uuid() }}" hidden>
+            <div class="row" style="margin-top: 0.25rem !important; margin-bottom: 0.3rem !important;">
+              <li class="collection-item">
+                <span class="col s2 grey-text text-darken-1">{{ a.get_title() }}</span>
+                <span class="col s2">{{ a.get_due_date() }}</span>
+                {% if a.get_max_points() > 0 %}
+                  <span class="col s2 grey-text text-darken-1" id="collection-grade">({{ a.get_points() }} / {{ a.get_max_points() }}) 
+
+                    {% if (100.0 * a.get_points() / a.get_max_points()) < (0.5) %}
+                      <span class="red-text">
+                    {% elif (100.0 * a.get_points() / a.get_max_points()) < (0.8) %}
+                      <span class="orange-text">
+                    {% else %}
+                      <span class="green-text">
+                    {% endif %}
+
+                    {{ 100.0 * a.get_points() / a.get_max_points() }}%</span>
+                  </span>
+                {% endif %}
+                {% if a.get_completed() %}
+                  <span class="col s2 green-text">Complete</span>
+                {% else %}
+                  <span class="col s2 red-text">Incomplete</span>
+                {% endif %}
+                  <!-- modal trigger -->
+                  <a class="waves-effect waves-light small btn modal-trigger red accent-2 right" href="#modal{{ a.get_uuid() }}">DELETE</a>
+
+                  <!-- modal structure -->
+                  <div id="modal{{ a.get_uuid() }}" class="modal">
+                    <!-- display a reasonable warning -->
+                    <!-- TODO: delete all the assignments and notes once a semester gets deleted -->
+                    <div class="modal-content">
+                      <h4 class="red-text">Warning</h4>
+                      <p>
+                        Are you sure you want to delete your assignment
+                        <code>`{{ str(a.get_title()) }}`</code>?
+                      </p>
+                    </div>
+                    <div class="modal-footer">
+                      <a class="modal-close waves-effect teal lighten-2 btn-flat">
+                        <span class="white-text">Cancel</span>
+                      </a>
+                      <!-- delete action -->
+                      <button
+                        class="btn small waves-effect waves-light red accent-2"
+                        type="submit"
+                        name="delete"
+                        value="delete"
+                        style="margin: 0 !important;">
+                          <span class="white-text">Delete</span>
+                      </button>
+                    </div>
+                  </div>
+                  <button
+                    class="small btn-flat waves-effect teal lighten-2 col s2 right"
+                    type="submit"
+                    name="edit"
+                    style="margin-right: .75rem !important;"
+                    value="{{ a.get_uuid() }}">
+                      <span class="white-text">Edit</span>
+                  </button>
+              </li>
+            </div>
+
+          {% endif %}
+
+          </form>
+        {% endfor %}
+
+      </div>
+      {% endfor %}
+    </div>
+
+  <br>
 
   <style type="text/css">
     .badge {
@@ -104,6 +327,24 @@
     .material-icons {
       padding-bottom: 3px !important;
     }
+
+    @media(max-width:500px){
+      #collection-grade {
+        margin-right: 2.5rem !important;
+      }
+    }
   </style>
 
+  <script type="text/javascript">
+    $(function() {
+      scatterAssignment([ {%for a in assignments %}{{ a.to_json()|tojson }},{% endfor %} ], [ {%for c in classes %}{{ c.to_json()|tojson }},{% endfor %} ]);
+      $('#check_id').prop('checked', false);
+      $('#hidden_data').prop('value', $('#check_id').prop('checked'));
+    });
+
+    $('#span_id').mousedown(function() {
+      $('#hidden_data').prop('value', !$('#check_id').prop('checked'));
+      console.log($('#hidden_data').prop('value'), $('#check_id').prop('checked'));
+    });
+  </script>
 </body>

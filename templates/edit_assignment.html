@@ -35,11 +35,7 @@
     });
 
     $(document).ready(function(){
-      $('.timepicker').timepicker();
-    });
-
-    $(document).ready(function(){
-      $('.modal').modal();
+      $('.datepicker').datepicker();
     });
   </script>
   
@@ -105,90 +101,93 @@
 
   <br>
 
-  <div class="container new-class">
-    <h5 class="blue-text">Edit class <code>`{{ course.get_title() }}`</code></h5>
+  <div class="container new-assignment">
+    <h5 class="blue-text">Add a new assignment</h5>
     <form method="POST">
       <div class="row">
-        <div class="input-field col s12 m6 l4">
+        <div class="input-field col s12 m6 l6">
           <input
-            id="prefix"
+            id="title"
             type="text"
             class="validate"
-            name="prefix"
+            name="title"
+            value="{{ assignment.get_title() }}"
             required=""
-            aria-required="true"
-            value="{{ course.get_prefix() }}">
-          <label for="prefix">Course Prefix</label>
+            aria-required="true">
+          <label for="title">Title</label>
         </div>
-        <div class="input-field col s12 m6 l4">
+        <div class="input-field col s12 m3 l3">
           <input
-            id="course_number"
+            id="due_date"
             type="text"
-            class="validate"
-            name="course_number"
+            class="datepicker"
+            name="due_date"
+            value="{{ assignment.get_due_date() }}"
             required=""
-            aria-required="true"
-            value="{{ course.get_course_number() }}">
-          <label for="course_number">Course Number</label>
+            aria-required="true">
+          <label for="due_date">Due Date</label>
         </div>
-        <div class="input-field col s12 m12 l4">
-          <input
-            id="instructor"
-            type="text"
-            class="validate"
-            name="instructor"
-            required=""
-            aria-required="true"
-            value="{{ course.get_instructor() }}">
-          <label for="instructor">Instructor</label>
+        <div class="input-field col s12 m3 l3">
+          <select name="class_selector">
+            <option value="" disabled selected>{{ class_.get_title() }}</option>
+            {% for c in classes %}
+              {% if c.get_semester_id() == active_semester.get_uuid() %}
+                <option value="{{ c.get_uuid() }}">{{ c.get_title() }}</option>
+              {% endif %}
+            {% endfor %}
+          </select>
+          <label>Select a Class</label>
         </div>
       </div>
       <div class="row">
-        <div class="input-field col s12 m6 l6">
+        <div class="input-field col s12 m2 l2">
           <input
-            id="meet_days"
+            id="points"
             type="text"
             class="validate"
-            name="meet_days"
-            required=""
-            aria-required="true"
-            value="{{ course.get_meet_days() }}">
-          <label for="meet_days">Meet Days</label>
+            name="points"
+            value="{{ assignment.get_points() }}">
+          <label for="points">Points</label>
         </div>
-        <div class="input-field col s12 m6 l6">
+        <div class="input-field col s12 m2 l2">
           <input
-            disabled
-            id="disabled"
+            id="max_points"
             type="text"
             class="validate"
-            required=""
-            aria-required="true"
-            value="{{ course.get_semester_id() }}">
-          <label for="disabled">Semester ID</label>
+            name="max_points"
+            value="{{ assignment.get_max_points() }}">
+          <label for="max_points">Max Points</label>
+        </div>
+        <div class="input-field col s12 m2 l2">
+          <input
+            id="weight"
+            type="text"
+            class="validate"
+            name="weight"
+            value="{{ assignment.get_weight() }}">
+          <label for="weight">Total Weight</label>
+        </div>
+        <div class="input-field col s12 m4 l4">
+          <input
+            id="link"
+            type="text"
+            class="validate"
+            name="link"
+            value="{{ assignment.get_link() }}">
+          <label for="link">Link</label>
+        </div>
+        <div class="input-field col s12 m2 l2">
+          <p>
+            <label id="label_id">
+              <input type="checkbox" id="check_id"/>
+              <span id="span_id">Completed</span>
+            </label>
+          </p>
         </div>
       </div>
-      <div class="row">
-        <div class="input-field col s12 m6 l6">
-          <input
-            type="text"
-            class="timepicker"
-            name="start_time"
-            required=""
-            aria-required="true"
-            value="{{ course.get_start_time() }}">
-          <label for="start_time">Enter Start Time</label>
-        </div>
-        <div class="input-field col s12 m6 l6">
-          <input
-            type="text"
-            class="timepicker"
-            name="end_time"
-            required=""
-            aria-required="true"
-            value="{{ course.get_end_time() }}">
-          <label for="end_time">Enter End Time</label>
-        </div>
-      </div>
+
+      <input type="text" id="hidden_data" name="completed" hidden>
+
       <div class="row">
         <div class="right">
           <button
@@ -210,4 +209,15 @@
     </form>
   </div>
 
+  <script type="text/javascript">
+    $(document).ready(function() {
+      console.log(Boolean("{{ str(assignment.get_completed()).lower() }}"), "{{ str(assignment.get_completed()).lower() }}");
+      $('#check_id').prop('checked', {{ str(assignment.get_completed()).lower() }});
+      $('#hidden_data').prop('value', $('#check_id').prop('checked'));
+    });
+
+    $('#span_id').mousedown(function() {
+      $('#hidden_data').prop('value', !$('#check_id').prop('checked'));
+    });
+  </script>
 </body>

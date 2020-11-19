@@ -1,3 +1,19 @@
+"""
+    Copyright 2020 Lucas Bernard Black
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+"""
+
 class Class:
     # constructor
     def __init__(self, uid, prefix, course_number, instructor, meet_days, start_time, end_time, semester_id):
@@ -12,11 +28,11 @@ class Class:
 
     def to_json(self):  # New special method.
         """ Convert to JSON format string representation. """
-        return [ self.get_title(), self.get_meet_days(), self.get_start_time(), self.get_end_time() ]
+        return [ self.get_title(), self.get_meet_days(), self.get_start_time(), self.get_end_time(), self.get_uuid() ]
 
     # getters
     def get_uuid(self):
-        return self.uid
+        return int(self.uid)
 
     def get_prefix(self):
         return self.prefix
@@ -37,7 +53,7 @@ class Class:
         return self.end_time
 
     def get_semester_id(self):
-        return self.semester_id
+        return int(self.semester_id)
 
     def get_title(self):
         return str(self.get_prefix()) + " " + str(self.get_course_number())

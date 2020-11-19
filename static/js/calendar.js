@@ -1,3 +1,21 @@
+/*
+
+  Copyright 2020 Lucas Bernard Black
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+*/
+
 colors = [
   "#ff5252",
   "#29b6f6",
@@ -10,6 +28,50 @@ colors = [
   "#ff9800",
   "#cddc39",
 ];
+
+var scaleFactor = 0.25;
+function adjustScaleFactor() {
+  var timeCtx = document.getElementById("timeRequirements");
+  var weekCtx = document.getElementById("weeklySchedule");
+
+  if (timeCtx) {
+    timeCtx.width += 0
+  }
+
+  if (weekCtx) {
+    weekCtx.width += 0
+  }
+
+  console.log(window.innerWidth);
+
+  for (var i = 1900; i >= 0; i-=100) {
+    if (window.innerWidth > i && i > 1600) {
+      scaleFactor = 0.55 - (i / 1900) * 0.44;
+      break;
+    }
+
+    if (window.innerWidth > i && i <= 1600 && i > 1300) {
+      scaleFactor = 0.46 - (i / 1900) * 0.44;
+      break;
+    }
+
+    if (window.innerWidth > i && i <= 1300 && i > 900) {
+      scaleFactor = 0.41 - (i / 1900) * 0.4;
+      break;
+    }
+
+    if (window.innerWidth > i && i <= 900 && i > 550) {
+      scaleFactor = 0.38 - (i / 1900) * 0.38;
+      break;
+    }
+
+    if (window.innerWidth > i && i <= 550) {
+      scaleFactor = 0.42 - (i / 1900) * 0.4;
+      break;
+    }
+  }
+}
+adjustScaleFactor();
 
 function util_get_dataset(data) {
   var datasets = [];
@@ -59,7 +121,7 @@ function timeReq(data) {
   var datasets = util_get_dataset(data);
 
   var ctx = document.getElementById("timeRequirements");
-  ctx.height = 80;
+  ctx.height = window.innerHeight * scaleFactor;
   new Chart(ctx, {
     type: 'bar',
     data: {
@@ -111,10 +173,8 @@ function timeReq(data) {
   });
 }
 
-
 function weeklySchedule(data) {
-  console.log(data);
-
+  // load the data sets from SQLite3 DB -> Flask -> html -> javascript in JSON
   var datasets = [];
   data.forEach(function (item, index) {
     var course = item;
@@ -154,7 +214,8 @@ function weeklySchedule(data) {
   });
 
   var ctx = document.getElementById("weeklySchedule");
-  ctx.height = 100;
+  ctx.height = window.innerHeight * scaleFactor;
+  // ctx.height = 100;
   new Chart(ctx, {
     type: 'line',
     tooltips: {

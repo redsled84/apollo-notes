@@ -1,8 +1,26 @@
+"""
+    Copyright 2020 Lucas Bernard Black
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+"""
+
 import sqlite3
 import uuid
-from semester import Semester
-from user import User
-from classes import Class
+from semester   import Semester
+from user       import User
+from classes    import Class
+from assignment import Assignment
+from note       import Note
 
 class DatabaseWrapper:
     def __init__(self, filename):
@@ -15,6 +33,8 @@ class DatabaseWrapper:
         self.notes       = []
         self.assignments = []
         self.classes     = []
+
+        self.sort_func = "date"
         #self.users = []
 
     """
@@ -135,13 +155,17 @@ class DatabaseWrapper:
         self.c.execute('SELECT * FROM CLASS')
         return self.c.fetchall()
 
+    def select_class_with_id(self, class_id):
+        self.c.execute('SELECT * FROM CLASS WHERE CLASS_ID=?', (class_id,))
+        return self.c.fetchone()
+
     def select_class_from_semester(self, semester_id):
         self.c.execute('SELECT * FROM CLASS WHERE SEMESTER_ID=?', (semester_id,))
         return self.c.fetchall()
 
     def insert_class(self, prefix, course_number, instructor, meet_days, start_time, end_time, semester_id):
-        if prefix == "" or course_number == "" or instructor == "" or meet_days == "" or \
-        start_time == "" or end_time == "" or semester_id == "":
+        if not prefix or not course_number or not instructor or not meet_days or \
+        not start_time or not end_time or not semester_id:
             print('Attempted to insert an invalid class object.')
             return
 
@@ -156,9 +180,6 @@ class DatabaseWrapper:
             semester_id
         )
         self.classes.append(temp)
-
-        if temp.semester_id in self.semesters:
-            print 'true'
 
         self.c.execute("""INSERT INTO CLASS(CLASS_ID,
                                             CLASS_PREFIX,
@@ -219,17 +240,11 @@ class DatabaseWrapper:
 
         if temp_semester:
             self.c.execute('UPDATE SEMESTER SET SEMESTER_NUM_CLASSES=? WHERE SEMESTER_ID=?',
-                (temp_semester.get_num_classes(), int(class_[7]))
+                (temp_semester.get_num_classes(), int(semester_id))
             )
             self.save_changes()
 
     def update_class(self, class_id, prefix, course_number, instructor, meet_days, start_time, end_time):
-        self.c.execute('SELECT * FROM CLASS WHERE CLASS_ID=?',
-            (int(class_id),)
-        )
-        class_ = self.c.fetchone()
-        self.save_changes()
-
         self.c.execute("""UPDATE CLASS SET
             CLASS_PREFIX=?,
             CLASS_COURSE_NUMBER=?,
@@ -261,16 +276,94 @@ class DatabaseWrapper:
     # get number of assignments completed
 
     def load_assignments(self):
-        return
+        assignments = self.select_assignment()
+        self.save_changes()
+        for a in assignments:
+            self.assignments.append(Assignment(
+                a[0], # uuid
+                a[1], # title
+                a[2], # due date
+                a[3], # completed
+                a[4], # points
+                a[5], # max points
+                a[6], # weight
+                a[7], # link
+                a[8]  # class id
+            ))
 
-    def insert_assignment(self):
-        return
+    def insert_assignment(self, title, due_date, completed, points, max_points, weight, link, class_id):
+        temp = Assignment(
+            self.get_uuid(),
+            title,
+            due_date,
+            completed,
+            points,
+            max_points,
+            weight,
+            link,
+            class_id
+        )
+        self.assignments.append(temp)
 
-    def delete_assignment(self):
-        return
+        self.c.execute("""INSERT INTO ASSIGNMENT(
+                                            ASSIGNMENT_ID,
+                                            ASSIGNMENT_TITLE,
+                                            ASSIGNMENT_DUE_DATE,
+                                            ASSIGNMENT_COMPLETED,
+                                            ASSIGNMENT_POINTS,
+                                            ASSIGNMENT_MAX_POINTS,
+                                            ASSIGNMENT_WEIGHT,
+                                            ASSIGNMENT_LINK,
+                                            CLASS_ID)
+                               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""", (
+                                    temp.get_uuid(),
+                                    temp.get_title(),
+                                    temp.get_due_date(),
+                                    temp.get_completed(),
+                                    temp.get_points(),
+                                    temp.get_max_points(),
+                                    temp.get_weight(),
+                                    temp.get_link(),
+                                    temp.get_class_id() 
+                        ))
+        self.save_changes()
 
-    def update_assignment(self):
-        return
+    def delete_assignment(self, assignment_id):
+        self.c.execute('DELETE FROM ASSIGNMENT WHERE ASSIGNMENT_ID=?',
+            (int(assignment_id),)
+        )
+        self.save_changes()
+
+        self.assignments = []
+        self.load_assignments()
+
+    def update_assignment(self, assignment_id, title, due_date, completed, points=0, max_points=0, weight=0, link=""):
+        self.c.execute("""UPDATE ASSIGNMENT SET
+                    ASSIGNMENT_TITLE=?,
+                    ASSIGNMENT_DUE_DATE=?,
+                    ASSIGNMENT_COMPLETED=?,
+                    ASSIGNMENT_POINTS=?,
+                    ASSIGNMENT_MAX_POINTS=?,
+                    ASSIGNMENT_WEIGHT=?,
+                    ASSIGNMENT_LINK=? WHERE ASSIGNMENT_ID=?""", (
+                        str(title),
+                        str(due_date),
+                        int(str(completed).lower() == 'true'),
+                        float(points),
+                        float(max_points),
+                        float(weight),
+                        str(link),
+                        int(assignment_id)
+                    )
+        )
+        self.save_changes()
+
+        self.assignments = []
+        self.load_assignments()
+
+    def select_assignment(self):
+        self.c.execute('SELECT * FROM ASSIGNMENT')
+        return self.c.fetchall()
 
     def get_n_assignments_completed(self, class_id):
         return
@@ -283,16 +376,84 @@ class DatabaseWrapper:
     """
 
     def load_notes(self):
-        return
+        notes = self.select_note()
+        self.save_changes()
+        for a in notes:
+            self.notes.append(Note(
+                a[0], # uuid
+                a[1], # title
+                a[2], # date
+                a[3], # author
+                a[4], # body
+                a[5], # flairs
+                a[6] # class_id
+            ))
 
-    def insert_note(self):
-        return
+    def insert_note(self, title, date, author, body, flairs, class_id):
+        temp = Note(
+            self.get_uuid(),
+            title,
+            date,
+            author,
+            body,
+            flairs,
+            class_id
+        )
+        self.notes.append(temp)
 
-    def delete_note(self):
-        return
+        self.c.execute("""INSERT INTO NOTE(
+                                        NOTE_ID,
+                                        NOTE_TITLE,
+                                        NOTE_DATE,
+                                        NOTE_AUTHOR,
+                                        NOTE_BODY,
+                                        NOTE_FLAIRS,
+                                        CLASS_ID)
+                               VALUES (?, ?, ?, ?, ?, ?, ?)""", (
+                                    temp.get_uuid(),
+                                    temp.get_title(),
+                                    temp.get_date(),
+                                    temp.get_author(),
+                                    temp.get_body(),
+                                    temp.get_flairs(),
+                                    temp.get_class_id()
+                        ))
+        self.save_changes()
 
-    def update_note(self):
-        return
+    def delete_note(self, note_id):
+        self.c.execute("""DELETE FROM NOTE WHERE NOTE_ID=?""", (note_id,))
+        self.save_changes()
+
+        self.notes = []
+        self.load_notes()
+
+    def update_note(self, note_id, title, date, author, body, class_id):
+        self.c.execute("""UPDATE NOTE SET
+                                        NOTE_TITLE=?,
+                                        NOTE_DATE=?,
+                                        NOTE_AUTHOR=?,
+                                        NOTE_BODY=?,
+                                        CLASS_ID=?
+                                WHERE NOTE_ID=?""", (
+                                    str(title),
+                                    str(date),
+                                    str(author),
+                                    str(body),
+                                    int(class_id),
+                                    int(note_id)
+                        ))
+        self.save_changes()
+
+        self.notes = []
+        self.load_notes()
+
+    def select_note(self):
+        self.c.execute("SELECT * FROM NOTE");
+        return self.c.fetchall()
+
+    def select_note_with_id(self, class_id):
+        self.c.execute("SELECT * FROM NOTE WHERE CLASS_ID=?", (class_id,))
+        return self.c.fetchone()
 
     def get_n_notes(self, class_id):
         return
@@ -302,7 +463,6 @@ class DatabaseWrapper:
     """
     Misc
     """
-
 
     # fetch my user object
     def get_user(self):
