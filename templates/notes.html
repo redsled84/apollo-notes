@@ -53,6 +53,10 @@
     $(document).ready(function(){
       $('.modal').modal();
     });
+
+    $(document).ready(function(){
+      $('.materialboxed').materialbox();
+    });
   </script>
   <!-- Compiled and minified CSS -->
   <meta name = "viewport" content = "width=device-width, initial-scale=1">
@@ -172,7 +176,19 @@
                 <div class="card">
                   <div class="card-content">
                     <span class="card-title">{{ note.get_title() }}<h6 class="right grey-text">{{ note.get_date() }}</h6></span>
-                    <p>{{ note.get_body() | safe }}</p>
+                    <article class="container"
+                         lang=en
+                         style="
+                          width: 85% !important;
+                          overflow: hidden;
+                          word-break: keep-all;
+                          word-wrap: break-word;
+                          display: block;
+                          -webkit-hyphens: auto;
+                          -moz-hyphens: auto;
+                              hyphens: auto;">
+                      <p class="grey-text text-darken-3">{{ note.get_body() | safe }}</p>
+                    </article>
                   </div>
                   <div class="card-action">
                     <div class="row" style="margin:0 !important;">
@@ -237,6 +253,10 @@
 
     .material-icons {
       padding-bottom: 3px !important;
+    }
+
+    p {
+      font-size: 16px !important;
     }
   </style>
 

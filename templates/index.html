@@ -81,6 +81,8 @@
     </div>
   </nav>
 
+  <br>
+
   <!-- Basic metrics (read-only) -->
   <div class="container">
     <h2>Hi, <span class="blue-text accent-3">{{ user.first }}</span> :)</h2>
@@ -123,9 +125,11 @@
             <span class="card-title">{{ note.get_title() }}
               <span class="right grey-text text-darken-1">{{ note.get_date() }}</span>
             </span>
-            <p class="grey-text text-darken-2">
-             {{ note.get_body()[:500] | safe }}...
-            </p>
+            <div class="container" style="width: 95%;">
+              <p class="grey-text text-darken-2">
+               {{ note.get_body()[:1250] | safe }}...
+              </p>
+            </div>
           </div>
           <div class="card-action">
             {% for c in classes %}

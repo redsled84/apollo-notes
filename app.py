@@ -48,6 +48,9 @@ month_days = {
 def date_sort(e):
     return months[e.get_due_date()[0:3]] * 100 + int(e.get_due_date().split()[1][0:-1])
 
+def date_sort_note(e):
+    return int(e.get_date().split()[1][0:-1])
+
 def title_sort(e):
     return e.get_title()
 
@@ -66,9 +69,6 @@ from flask import Flask, render_template, url_for, request, redirect, json
 from client import DatabaseWrapper
 from classes import Class
 from datetime import datetime
-
-def _default(self, obj):
-    return getattr(obj.__class__, "to_json", _default.default)(obj)
 
 app = Flask(__name__)
 
@@ -115,11 +115,16 @@ def index(name=None):
                     if a.get_class_id() in classes_semesters
                        and a.get_due_date()[0:3] == str(now.strftime("%b"))]
 
+    index_assignments.sort(key=date_sort, reverse=True)
+
     # most recent notes
     index_notes = [n for n in db.notes
                 if n.get_class_id() in classes_semesters
                     and (months[n.get_date()[0:3]] + int(n.get_date().split(',')[0][-2:]))
                     - (int(now.month) + int(now.day)) < 50]
+
+    index_notes.sort(key=date_sort_note)
+    index_notes.reverse()
 
     # all basic metrics apply to a given active semester
     basic_metrics = {
